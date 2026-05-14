@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using GestionSallesEtEDT.Api.Data;
 using GestionSallesEtEDT.Api.Services;
-using GestionSallesEtEDT.Api.Data; 
+using Microsoft.EntityFrameworkCore;
 
 namespace GestionSallesEtEDT.Api.Controllers
 {
@@ -18,18 +19,37 @@ namespace GestionSallesEtEDT.Api.Controllers
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            // Simulation : Remplace par une vraie vérification en DB avec BCrypt pour le mot de passe
-            var user = _context.Utilisateurs.FirstOrDefault(u => u.Email == loginDto.Email);
+            // Recherche de l'utilisateur
+            var user = await _context.Utilisateurs
+                .FirstOrDefaultAsync(u => u.Email == request.Email);
 
-            if (user == null || user.MotDePasseHash != loginDto.Password) 
-                return Unauthorized("Email ou mot de passe incorrect");
+            // Vérification des identifiants (mot de passe en clair pour le test actuel)
+            if (user == null || user.MotDePasseHash != request.Password)
+            {
+                return Unauthorized(new { message = "Email ou mot de passe incorrect." });
+            }
 
+            // Génération du Token
             var token = _authService.GenerateToken(user);
-            return Ok(new { token });
+
+            // On renvoie le token et les infos utiles pour le frontend
+            return Ok(new 
+            { 
+                token = token,
+                user = new { 
+                    nom = user.Nom, 
+                    email = user.Email, 
+                    role = user.Role.ToString() 
+                }
+            });
         }
     }
 
-    public class LoginDto { public required string Email { get; set; } public required string Password { get; set; } }
+    public class LoginRequest
+    {
+        public required string Email { get; set; }
+        public required string Password { get; set; }
+    }
 }

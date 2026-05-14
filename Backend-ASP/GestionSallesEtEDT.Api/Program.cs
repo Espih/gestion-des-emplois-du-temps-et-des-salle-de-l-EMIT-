@@ -38,8 +38,8 @@ builder.Services.AddAuthentication(options =>
 
 // --- 3. SERVICES : CONFIGURATION CORS ---
 builder.Services.AddCors(options => {
-    options.AddPolicy("AllowAll", policy => {
-        policy.AllowAnyOrigin()
+    options.AddPolicy("FrontendPolicy", policy => {
+        policy.WithOrigins("http://localhost:5173")
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
@@ -62,7 +62,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Activer CORS
-app.UseCors("AllowAll");
+app.UseCors("FrontendPolicy");
 
 // --- 6. SÉCURITÉ : L'ORDRE EST ESSENTIEL ---
 app.UseAuthentication(); 
