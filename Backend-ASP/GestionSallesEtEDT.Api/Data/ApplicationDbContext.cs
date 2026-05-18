@@ -16,7 +16,7 @@ public class ApplicationDbContext : DbContext {
     public DbSet<Seance> Seances { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
-        // Configuration Héritage Utilisateur -> Enseignant (1:1)
+        // Config Héritage Utilisateur -> Enseignant (1:1)
         modelBuilder.Entity<Enseignant>()
             .HasOne(e => e.Utilisateur)
             .WithOne(u => u.Enseignant)
