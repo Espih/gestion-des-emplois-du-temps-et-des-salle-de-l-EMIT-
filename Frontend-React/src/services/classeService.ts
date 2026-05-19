@@ -15,7 +15,7 @@ export const classeService = {
     return response.data;
   },
 
-  create: async (classe: Omit<Classe, "id_cli">): Promise<Classe> => {
+  create: async (classe: Omit<Classe, "id">): Promise<Classe> => {
     const response = await api.post("/classes", classe);
     return response.data;
   },

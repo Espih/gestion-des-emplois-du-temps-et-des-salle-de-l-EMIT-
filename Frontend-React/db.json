@@ -1,16 +1,22 @@
 {
   "classes": [
     {
-      "id_cli": 1,
+      "id": 1,
       "nom_cli": "Classe A",
       "niveau_cli": "1ère Année",
       "id_annee": 1
     },
     {
-      "id_cli": 2,
+      "id": 2,
       "nom_cli": "Classe B",
       "niveau_cli": "2ème Année",
       "id_annee": 1
+    },
+    {
+      "nom_cli": "classe D",
+      "niveau_cli": "5em annee",
+      "id_annee": 1,
+      "id": 2025
     }
   ],
   "etudiants": [
@@ -21,7 +27,7 @@
       "prenom_stu": "Jean",
       "email_stu": "jean.dupont@emit.com",
       "role_stu": "Etudiant",
-      "id_cli": 1
+      "id": 1
     }
   ],
   "enseignants": [
@@ -64,20 +70,20 @@
       "heureFin_seance": "10:00",
       "id_matiere": 1,
       "id_salle": 1,
-      "id_cli": 1
+      "id": 1
     }
   ],
   "emploiDuTemps": [
     {
       "id_temps": 1,
       "dateCreation_temps": "2024-01-01T00:00:00.000Z",
-      "id_cli": 1,
+      "id": 1,
       "id_annee": 1
     }
   ],
   "anneeUniversitaire": [
     {
-      "id_annee": 1,
+      "id": 1,
       "dateDebut_annee": "2024-09-01T00:00:00.000Z",
       "dateFin_annee": "2025-06-30T00:00:00.000Z"
     }
