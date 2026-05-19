@@ -33,6 +33,7 @@ import { enseignantService } from "../services/enseignantService";
 import { matiereService } from "../services/matiereService";
 import type { Enseignant, EnseignantWithRelations } from "../models/enseignant";
 import type { Matiere } from "../models/matiere";
+import { closeSwal, showConfirmDelete, showError, showLoading, showSuccess } from "../swal";
 
 export default function Enseignants() {
   const [enseignants, setEnseignants] = useState<EnseignantWithRelations[]>([]);
@@ -101,20 +102,26 @@ export default function Enseignants() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer cet enseignant ?")) {
-      try {
-        await enseignantService.delete(id);
-        await refreshData();
-      } catch (err) {
-        console.log("erreur :", err);
-        
-        setError("Erreur lors de la suppression");
-      }
+const handleDelete = async (id: number) => {
+  const confirmed = await showConfirmDelete("cet enseignant");
+  
+  if (confirmed) {
+    try {
+      await enseignantService.delete(id);
+      await refreshData();
+      await showSuccess('Enseignant supprimé avec succès');
+    } catch (err) {
+      console.log("erreur :", err);
+      await showError('Impossible de supprimer cet enseignant');
+      setError("Erreur lors de la suppression");
     }
-  };
+  }
+};
 
-  const handleEdit = (enseignant: Enseignant) => {
+// Modification 
+const handleEdit = (enseignant: Enseignant) => {
+  setOpenDialog(false);
+  setTimeout(() => {
     setEditingEnseignant(enseignant);
     setFormData({
       nom_enseignant: enseignant.nom_enseignant,
@@ -123,30 +130,41 @@ export default function Enseignants() {
       telephone_enseignant: enseignant.telephone_enseignant,
     });
     setOpenDialog(true);
-  };
+  }, 100);
+};
 
-  const handleSave = async () => {
+const handleSave = async () => {
+  setOpenDialog(false);
+  setTimeout(async () => {
+    await showLoading(editingEnseignant ? "Modification en cours..." : "Ajout en cours...");
+    
     try {
       if (editingEnseignant) {
         await enseignantService.update(editingEnseignant.id, formData);
+        await closeSwal();
+        await showSuccess('Enseignant modifié avec succès !');
       } else {
         await enseignantService.create(formData);
+        await closeSwal();
+        await showSuccess('Enseignant ajouté avec succès !');
       }
+      
       await refreshData();
-      setOpenDialog(false);
       setEditingEnseignant(null);
       setFormData({
         nom_enseignant: "",
         prenom_enseignant: "",
         email_enseignant: "",
         telephone_enseignant: "",
-    });
+      });
     } catch (err) {
-       console.log("erreur :", err);
+      console.log("erreur :", err);
+      await closeSwal();
+      await showError("Erreur lors de l'enregistrement");
       setError("Erreur lors de l'enregistrement");
     }
-  };
-
+  }, 100);
+};
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
