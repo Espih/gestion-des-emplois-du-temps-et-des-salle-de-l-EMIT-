@@ -1,0 +1,113 @@
+{
+  "classes": [
+    {
+      "id_cli": 1,
+      "nom_cli": "Classe A",
+      "niveau_cli": "1ère Année",
+      "id_annee": 1
+    },
+    {
+      "id_cli": 2,
+      "nom_cli": "Classe B",
+      "niveau_cli": "2ème Année",
+      "id_annee": 1
+    }
+  ],
+  "etudiants": [
+    {
+      "id_etudiant": 1,
+      "matricule_stu": "STU001",
+      "nom_stu": "Dupont",
+      "prenom_stu": "Jean",
+      "email_stu": "jean.dupont@emit.com",
+      "role_stu": "Etudiant",
+      "id_cli": 1
+    }
+  ],
+  "enseignants": [
+    {
+      "id": 1,
+      "nom_enseignant": "Martin",
+      "prenom_enseignant": "Jean",
+      "email_enseignant": "jean.martin@emit.com",
+      "telephone_enseignant": "06 12 34 56 78"
+    },
+    {
+      "nom_enseignant": "elvestino",
+      "prenom_enseignant": "dorelin",
+      "email_enseignant": "elvestinodorelin@gmail.com",
+      "telephone_enseignant": "111111111",
+      "id": 2
+    }
+  ],
+  "matieres": [
+    {
+      "id_matiere": 1,
+      "code_matiere": "MATH101",
+      "libelle_matiere": "Mathématiques",
+      "coefficient_matiere": 5,
+      "id": 1
+    }
+  ],
+  "salles": [
+    {
+      "id_salle": 1,
+      "code_salle": "S101",
+      "type_salle": "Cours"
+    }
+  ],
+  "seances": [
+    {
+      "id_seance": 1,
+      "id_jour_seance": "Lundi",
+      "heureDebut_seance": "08:00",
+      "heureFin_seance": "10:00",
+      "id_matiere": 1,
+      "id_salle": 1,
+      "id_cli": 1
+    }
+  ],
+  "emploiDuTemps": [
+    {
+      "id_temps": 1,
+      "dateCreation_temps": "2024-01-01T00:00:00.000Z",
+      "id_cli": 1,
+      "id_annee": 1
+    }
+  ],
+  "anneeUniversitaire": [
+    {
+      "id_annee": 1,
+      "dateDebut_annee": "2024-09-01T00:00:00.000Z",
+      "dateFin_annee": "2025-06-30T00:00:00.000Z"
+    }
+  ],
+  "utilisateurs": [
+    {
+      "id_utilisateur": 1,
+      "nom_utilisateur": "Admin",
+      "prenom_utilisateur": "System",
+      "email_utilisateur": "admin@emit.com",
+      "role_utilisateur": "Admin",
+      "password": "admin123"
+    }
+  ],
+  "posts": [
+    {
+      "id_post": 1,
+      "titre_post": "Bienvenue",
+      "contenu_post": "Bienvenue sur la plateforme EMIT",
+      "date_post": "2024-01-01T00:00:00.000Z",
+      "id_utilisateur": 1
+    }
+  ],
+  "commentaires": [
+    {
+      "id_commentaire": 1,
+      "contenu_commentaire": "Merci !",
+      "date_commentaire": "2024-01-02T00:00:00.000Z",
+      "id_post": 1,
+      "id_utilisateur": 1
+    }
+  ]
+}

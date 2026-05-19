@@ -64,9 +64,7 @@ export default function Matieres() {
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f9fafb" }}>
-     
-      <Box sx={{ flex: 1, ml: "280px" }}>
-      
+      <Box sx={{ flex: 1 }}>
         <Box sx={{ p: 3 }}>
           {/* Header */}
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>

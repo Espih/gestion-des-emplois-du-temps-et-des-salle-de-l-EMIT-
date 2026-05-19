@@ -1,4 +1,4 @@
-import { Grid, Box } from "@mui/material";
+import { Grid, Box, Typography } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import SchoolIcon from "@mui/icons-material/School";
 import BookIcon from "@mui/icons-material/Book";
@@ -19,8 +19,17 @@ export default function Dashboard() {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
+      {/* Titre de la page */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: "bold", color: "#020339" }}>
+          Dashboard
+        </Typography>
+        <Typography variant="body2" sx={{ color: "#6b7280", mt: 0.5 }}>
+          Bienvenue, Test
+        </Typography>
+      </Box>
+
       <Grid container spacing={3}>
-        {/* Stats Cards - Correction: ajouter container et utiliser les props correctement */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard title="Total Classes" value={12} icon={<DashboardIcon />} color="#020339" trend={12} />
         </Grid>

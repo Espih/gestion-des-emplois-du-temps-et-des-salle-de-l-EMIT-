@@ -1,4 +1,5 @@
-import { useState } from "react";
+// pages/Classes.tsx (version corrigée)
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -19,56 +20,95 @@ import {
   DialogActions,
   TextField,
   Chip,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ClassIcon from "@mui/icons-material/Class";
+import { classeService } from "../services/classeService";
+import type { Classe } from "../models/classe";
 
-interface Class {
-  id: number;
-  name: string;
-  level: string;
-  students: number;
-  teacher: string;
-}
 
 export default function Classes() {
-  const [classes, setClasses] = useState<Class[]>([
-    { id: 1, name: "Classe A", level: "1ère Année", students: 25, teacher: "M. Martin" },
-    { id: 2, name: "Classe B", level: "2ème Année", students: 28, teacher: "Mme. Bernard" },
-    { id: 3, name: "Classe C", level: "3ème Année", students: 30, teacher: "M. Dubois" },
-  ]);
+  const [classes, setClasses] = useState<Classe[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
-  const [editingClass, setEditingClass] = useState<Class | null>(null);
+  const [editingClass, setEditingClass] = useState<Classe | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    level: "",
+    students: 0,
+    teacher: "",
+  });
 
-  const handleDelete = (id: number) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette classe ?")) {
-      setClasses(classes.filter((c) => c.id !== id));
+  // Déclarer loadClasses AVANT useEffect
+  const loadClasses = async () => {
+    try {
+      setLoading(true);
+      const data = await classeService.getAll();
+      setClasses(data);
+      setError("");
+    } catch (err) {
+      setError("Erreur lors du chargement des classes");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEdit = (classe: Class) => {
+  // Maintenant useEffect peut utiliser loadClasses
+  useEffect(() => {
+    loadClasses();
+  }, []);
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette classe ?")) {
+      try {
+        await classeService.delete(id);
+        await loadClasses();
+      } catch (err) {
+        setError("Erreur lors de la suppression");
+      }
+    }
+  };
+
+  const handleEdit = (classe: Classe) => {
     setEditingClass(classe);
+    setFormData({
+      name: classe.name,
+      level: classe.level,
+      students: classe.students,
+      teacher: classe.teacher,
+    });
     setOpenDialog(true);
   };
 
-  const handleSave = () => {
-    if (editingClass) {
-      setClasses(classes.map((c) => (c.id === editingClass.id ? editingClass : c)));
-    } else {
-      const newClass = {
-        id: classes.length + 1,
-        name: "Nouvelle Classe",
-        level: "Niveau",
-        students: 0,
-        teacher: "Enseignant",
-      };
-      setClasses([...classes, newClass]);
+  const handleSave = async () => {
+    try {
+      if (editingClass) {
+        await classeService.update(editingClass.id, formData);
+      } else {
+        await classeService.create(formData);
+      }
+      await loadClasses();
+      setOpenDialog(false);
+      setEditingClass(null);
+      setFormData({ name: "", level: "", students: 0, teacher: "" });
+    } catch (err) {
+      setError("Erreur lors de l'enregistrement");
     }
-    setOpenDialog(false);
-    setEditingClass(null);
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -87,11 +127,12 @@ export default function Classes() {
           startIcon={<AddIcon />}
           onClick={() => {
             setEditingClass(null);
+            setFormData({ name: "", level: "", students: 0, teacher: "" });
             setOpenDialog(true);
           }}
           sx={{
             bgcolor: "#020339",
-            "&:hover": { bgcolor: "#020339/90" },
+            "&:hover": { bgcolor: "#020339CC" },
             textTransform: "none",
             borderRadius: "8px",
           }}
@@ -100,20 +141,25 @@ export default function Classes() {
         </Button>
       </Box>
 
+      {/* Error Alert */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
+          {error}
+        </Alert>
+      )}
+
       {/* Table */}
       <Card sx={{ borderRadius: "12px", boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.05)", border: "1px solid #f3f4f6" }}>
-        <CardContent>
+        <CardContent sx={{ p: 0 }}>
           <TableContainer component={Paper} elevation={0}>
             <Table>
               <TableHead>
                 <TableRow sx={{ bgcolor: "#f9fafb" }}>
-                  <TableCell sx={{ fontWeight: "semibold", color: "#6b7280" }}>Nom</TableCell>
-                  <TableCell sx={{ fontWeight: "semibold", color: "#6b7280" }}>Niveau</TableCell>
-                  <TableCell sx={{ fontWeight: "semibold", color: "#6b7280" }}>Élèves</TableCell>
-                  <TableCell sx={{ fontWeight: "semibold", color: "#6b7280" }}>Enseignant</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: "semibold", color: "#6b7280" }}>
-                    Actions
-                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Nom</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Niveau</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Élèves</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Enseignant</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, color: "#6b7280" }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -155,10 +201,35 @@ export default function Classes() {
         </DialogTitle>
         <DialogContent>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-            <TextField label="Nom de la classe" fullWidth size="small" />
-            <TextField label="Niveau" fullWidth size="small" />
-            <TextField label="Nombre d'élèves" type="number" fullWidth size="small" />
-            <TextField label="Enseignant" fullWidth size="small" />
+            <TextField
+              label="Nom de la classe"
+              fullWidth
+              size="small"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+            <TextField
+              label="Niveau"
+              fullWidth
+              size="small"
+              value={formData.level}
+              onChange={(e) => setFormData({ ...formData, level: e.target.value })}
+            />
+            <TextField
+              label="Nombre d'élèves"
+              type="number"
+              fullWidth
+              size="small"
+              value={formData.students}
+              onChange={(e) => setFormData({ ...formData, students: parseInt(e.target.value) })}
+            />
+            <TextField
+              label="Enseignant"
+              fullWidth
+              size="small"
+              value={formData.teacher}
+              onChange={(e) => setFormData({ ...formData, teacher: e.target.value })}
+            />
           </Box>
         </DialogContent>
         <DialogActions>
@@ -168,7 +239,7 @@ export default function Classes() {
           <Button
             onClick={handleSave}
             variant="contained"
-            sx={{ bgcolor: "#020339", "&:hover": { bgcolor: "#020339/90" }, textTransform: "none" }}
+            sx={{ bgcolor: "#020339", "&:hover": { bgcolor: "#020339CC" }, textTransform: "none" }}
           >
             Enregistrer
           </Button>

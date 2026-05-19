@@ -1,4 +1,4 @@
-// components/Layout/Navbar.tsx
+// Version avec titre à gauche et actions à droite
 import { useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
@@ -11,13 +11,12 @@ export default function Navbar() {
   return (
     <nav className="bg-white border-b border-gray-200 shadow-sm">
       <div className="px-6 py-4 flex justify-between items-center">
-        {/* Titre de la page */}
+        {/* Titre à gauche */}
         <div>
-          <h2 className="text-2xl font-bold text-[#020339]">Dashboard</h2>
-          <p className="text-sm text-gray-500 mt-1">Bienvenue, Andrew Bennett</p>
+          <h2 className="text-xl font-bold text-[#020339]">EMIT Planner</h2>
         </div>
 
-        {/* Actions droite */}
+        {/* Actions à droite */}
         <div className="flex items-center gap-4">
           {/* Recherche */}
           <Paper
