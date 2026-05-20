@@ -1,11 +1,11 @@
-// components/Layout/Sidebar.tsx
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ClassIcon from "@mui/icons-material/Class";
 import SchoolIcon from "@mui/icons-material/School";
 import BookIcon from "@mui/icons-material/Book";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import PersonIcon from "@mui/icons-material/Person";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 const menuItems = [
   { path: "/dashboard", name: "Dashboard", icon: DashboardIcon },
@@ -16,6 +16,16 @@ const menuItems = [
 ];
 
 export default function Sidebar() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Supprimer les données d'authentification
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    // Rediriger vers la page de login
+    navigate("/login");
+  };
+
   return (
     <aside className="fixed left-0 top-0 h-full w-64 bg-[#020339] text-white shadow-xl z-20">
       <div className="flex flex-col h-full">
@@ -58,7 +68,9 @@ export default function Sidebar() {
           </ul>
         </nav>
 
-        {/* Footer */}
+       
+
+        {/* Profile */}
         <div className="p-4 border-t border-[#94CCFB]/20">
           <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#94CCFB]/10">
             <div className="w-8 h-8 bg-[#94CCFB] rounded-full flex items-center justify-center">
@@ -69,6 +81,18 @@ export default function Sidebar() {
               <p className="text-xs text-[#94CCFB]">admin@emit.com</p>
             </div>
           </div>
+        </div>
+
+
+         {/* Bouton de déconnexion */}
+        <div className="p-4">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 bg-red-600 hover:bg-red-700 text-white font-medium"
+          >
+            <LogoutIcon className="text-xl" />
+            <span>Se déconnecter</span>
+          </button>
         </div>
       </div>
     </aside>
