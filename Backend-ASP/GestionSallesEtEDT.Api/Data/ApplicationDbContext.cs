@@ -14,8 +14,8 @@ public class ApplicationDbContext : DbContext {
     public DbSet<Matiere> Matieres { get; set; }
     public DbSet<EmploiDuTemps> EmploisDuTemps { get; set; }
     public DbSet<Seance> Seances { get; set; }
-    
     public DbSet<Semestre> Semestres { get; set; }
+    public DbSet<AnneeUniversitaire> AnneesUniversitaires { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         // Config Héritage Utilisateur -> Enseignant (1:1)
