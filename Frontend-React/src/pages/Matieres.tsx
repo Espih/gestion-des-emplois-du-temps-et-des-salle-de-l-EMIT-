@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -19,48 +18,143 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Chip
+  Chip,
+  CircularProgress,
+  Alert,
+  Grid,
+  MenuItem,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import BookIcon from "@mui/icons-material/Book";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-
-
-interface Matiere {
-  id: number;
-  nom: string;
-  code: string;
-  coefficient: number;
-  heuresSemaine: number;
-  enseignant: string;
-  niveau: string;
-}
+import { matiereService } from "../services/matiereService";
+import { enseignantService } from "../services/enseignantService";
+import type { Matiere, MatiereWithRelations } from "../models/matiere";
+import type { Enseignant } from "../models/enseignant";
+import { closeSwal, showConfirmDelete, showError, showLoading, showSuccess } from "../swal";
 
 export default function Matieres() {
-  const [matieres, setMatieres] = useState<Matiere[]>([
-    { id: 1, nom: "Mathématiques", code: "MATH101", coefficient: 5, heuresSemaine: 6, enseignant: "Jean Martin", niveau: "1ère Année" },
-    { id: 2, nom: "Physique", code: "PHY101", coefficient: 4, heuresSemaine: 4, enseignant: "Sophie Bernard", niveau: "1ère Année" },
-    { id: 3, nom: "Informatique", code: "INF101", coefficient: 6, heuresSemaine: 8, enseignant: "Thomas Dubois", niveau: "2ème Année" },
-    { id: 4, nom: "Anglais", code: "ANG101", coefficient: 3, heuresSemaine: 3, enseignant: "Marie Petit", niveau: "1ère Année" },
-    { id: 5, nom: "Histoire", code: "HIS101", coefficient: 3, heuresSemaine: 3, enseignant: "Nicolas Robert", niveau: "2ème Année" },
-    { id: 6, nom: "Chimie", code: "CHI101", coefficient: 4, heuresSemaine: 4, enseignant: "Sophie Bernard", niveau: "2ème Année" },
-  ]);
-
+  const [matieres, setMatieres] = useState<MatiereWithRelations[]>([]);
+  const [enseignants, setEnseignants] = useState<Enseignant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [editingMatiere, setEditingMatiere] = useState<Matiere | null>(null);
+  const [formData, setFormData] = useState({
+    code_matiere: "",
+    libelle_matiere: "",
+    coefficient_matiere: 0,
+    id_enseignant: 0,
+  });
 
-  const handleDelete = (id: number) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette matière ?")) {
-      setMatieres(matieres.filter((m) => m.id !== id));
+  // Charger les données
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [matieresData, enseignantsData] = await Promise.all([
+        matiereService.getAll(),
+        enseignantService.getAll(),
+      ]);
+      
+      // Enrichir les matières avec les enseignants
+      const matieresWithEnseignants = matieresData.map(matiere => ({
+        ...matiere,
+        enseignant: enseignantsData.find(e => e.id === matiere.id)
+      }));
+      
+      setMatieres(matieresWithEnseignants);
+      setEnseignants(enseignantsData);
+      setError("");
+    } catch (err) {
+      setError("Erreur lors du chargement des données");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      await loadData();
+    };
+    fetchData();
+  }, []);
+
+  // Suppression
+  const handleDelete = async (id: number) => {
+    const confirmed = await showConfirmDelete("cette matière");
+    
+    if (confirmed) {
+      await showLoading("Suppression en cours...");
+      try {
+        await matiereService.delete(id);
+        await loadData();
+        await closeSwal();
+        await showSuccess('Matière supprimée avec succès');
+      } catch (err) {
+        console.log("erreur :", err);
+        await closeSwal();
+        await showError('Impossible de supprimer cette matière');
+        setError("Erreur lors de la suppression");
+      }
+    }
+  };
+
+  // Modification (ouvrir le formulaire)
   const handleEdit = (matiere: Matiere) => {
     setEditingMatiere(matiere);
+    setFormData({
+      code_matiere: matiere.code_matiere,
+      libelle_matiere: matiere.libelle_matiere,
+      coefficient_matiere: matiere.coefficient_matiere,
+      id_enseignant: matiere.id,
+    });
     setOpenDialog(true);
   };
+
+  // Enregistrement (ajout et modification)
+  const handleSave = async () => {
+    setOpenDialog(false);
+    
+    setTimeout(async () => {
+      await showLoading(editingMatiere ? "Modification en cours..." : "Ajout en cours...");
+      
+      try {
+        if (editingMatiere) {
+          await matiereService.update(editingMatiere.id, formData);
+          await closeSwal();
+          await showSuccess('Matière modifiée avec succès !');
+        } else {
+          await matiereService.create(formData);
+          await closeSwal();
+          await showSuccess('Matière ajoutée avec succès !');
+        }
+        
+        await loadData();
+        setEditingMatiere(null);
+        setFormData({
+          code_matiere: "",
+          libelle_matiere: "",
+          coefficient_matiere: 0,
+          id_enseignant: 0,
+        });
+      } catch (err) {
+        console.log("erreur :", err);
+        await closeSwal();
+        await showError("Erreur lors de l'enregistrement");
+        setError("Erreur lors de l'enregistrement");
+      }
+    }, 150);
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f9fafb" }}>
@@ -81,6 +175,12 @@ export default function Matieres() {
               startIcon={<AddIcon />}
               onClick={() => {
                 setEditingMatiere(null);
+                setFormData({
+                  code_matiere: "",
+                  libelle_matiere: "",
+                  coefficient_matiere: 0,
+                  id_enseignant: 0,
+                });
                 setOpenDialog(true);
               }}
               sx={{
@@ -95,41 +195,56 @@ export default function Matieres() {
             </Button>
           </Box>
 
-          {/* Stats Cards */}
-          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 3, mb: 3 }}>
-            <Card sx={{ borderRadius: "12px", border: "1px solid #f3f4f6" }}>
-              <CardContent>
-                <Typography variant="body2" sx={{ color: "#6b7280" }}>Total Matières</Typography>
-                <Typography variant="h4" sx={{ fontWeight: "bold", color: "#020339", mt: 1 }}>
-                  {matieres.length}
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card sx={{ borderRadius: "12px", border: "1px solid #f3f4f6" }}>
-              <CardContent>
-                <Typography variant="body2" sx={{ color: "#6b7280" }}>Heures/semaine totales</Typography>
-                <Typography variant="h4" sx={{ fontWeight: "bold", color: "#94CCFB", mt: 1 }}>
-                  {matieres.reduce((sum, m) => sum + m.heuresSemaine, 0)}h
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card sx={{ borderRadius: "12px", border: "1px solid #f3f4f6" }}>
-              <CardContent>
-                <Typography variant="body2" sx={{ color: "#6b7280" }}>Coefficient moyen</Typography>
-                <Typography variant="h4" sx={{ fontWeight: "bold", color: "#10b981", mt: 1 }}>
-                  {(matieres.reduce((sum, m) => sum + m.coefficient, 0) / matieres.length).toFixed(1)}
-                </Typography>
-              </CardContent>
-            </Card>
-            <Card sx={{ borderRadius: "12px", border: "1px solid #f3f4f6" }}>
-              <CardContent>
-                <Typography variant="body2" sx={{ color: "#6b7280" }}>Enseignants</Typography>
-                <Typography variant="h4" sx={{ fontWeight: "bold", color: "#f59e0b", mt: 1 }}>
-                  {new Set(matieres.map(m => m.enseignant)).size}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Box>
+          {/* Error Alert */}
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
+              {error}
+            </Alert>
+          )}
+
+          {/* Statistiques */}
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card sx={{ borderRadius: "12px", border: "1px solid #f3f4f6" }}>
+                <CardContent>
+                  <Typography variant="body2" sx={{ color: "#6b7280" }}>Total Matières</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: "bold", color: "#020339", mt: 1 }}>
+                    {matieres.length}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card sx={{ borderRadius: "12px", border: "1px solid #f3f4f6" }}>
+                <CardContent>
+                  <Typography variant="body2" sx={{ color: "#6b7280" }}>Total Enseignants</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: "bold", color: "#94CCFB", mt: 1 }}>
+                    {enseignants.length}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card sx={{ borderRadius: "12px", border: "1px solid #f3f4f6" }}>
+                <CardContent>
+                  <Typography variant="body2" sx={{ color: "#6b7280" }}>Coefficient moyen</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: "bold", color: "#10b981", mt: 1 }}>
+                    {(matieres.reduce((sum, m) => sum + m.coefficient_matiere, 0) / matieres.length || 0).toFixed(1)}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Card sx={{ borderRadius: "12px", border: "1px solid #f3f4f6" }}>
+                <CardContent>
+                  <Typography variant="body2" sx={{ color: "#6b7280" }}>Matières par enseignant</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: "bold", color: "#f59e0b", mt: 1 }}>
+                    {(matieres.length / enseignants.length || 0).toFixed(1)}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
 
           {/* Table */}
           <Card sx={{ borderRadius: "12px", boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.05)", border: "1px solid #f3f4f6" }}>
@@ -141,9 +256,7 @@ export default function Matieres() {
                       <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Matière</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Code</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Coefficient</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Heures/Semaine</TableCell>
                       <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Enseignant</TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Niveau</TableCell>
                       <TableCell align="right" sx={{ fontWeight: 600, color: "#6b7280" }}>Actions</TableCell>
                     </TableRow>
                   </TableHead>
@@ -156,33 +269,22 @@ export default function Matieres() {
                               <BookIcon sx={{ color: "#020339", fontSize: 20 }} />
                             </Box>
                             <Typography variant="body2" sx={{ fontWeight: 500, color: "#1f2937" }}>
-                              {matiere.nom}
+                              {matiere.libelle_matiere}
                             </Typography>
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Chip label={matiere.code} size="small" sx={{ bgcolor: "#02033910", color: "#020339", fontFamily: "monospace" }} />
+                          <Chip label={matiere.code_matiere} size="small" sx={{ bgcolor: "#02033910", color: "#020339", fontFamily: "monospace" }} />
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" sx={{ fontWeight: 600, color: "#020339" }}>
-                            {matiere.coefficient}
+                            {matiere.coefficient_matiere}
                           </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                            <AccessTimeIcon sx={{ color: "#9ca3af", fontSize: 16 }} />
-                            <Typography variant="body2" sx={{ color: "#374151" }}>
-                              {matiere.heuresSemaine}h
-                            </Typography>
-                          </Box>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" sx={{ color: "#374151" }}>
-                            {matiere.enseignant}
+                            {matiere.enseignant ? `${matiere.enseignant.prenom_enseignant} ${matiere.enseignant.nom_enseignant}` : "Non assigné"}
                           </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip label={matiere.niveau} size="small" sx={{ bgcolor: "#94CCFB20", color: "#020339" }} />
                         </TableCell>
                         <TableCell align="right">
                           <IconButton size="small" onClick={() => handleEdit(matiere)} sx={{ color: "#94CCFB" }}>
@@ -207,12 +309,43 @@ export default function Matieres() {
             </DialogTitle>
             <DialogContent>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-                <TextField label="Nom de la matière" fullWidth size="small" />
-                <TextField label="Code" fullWidth size="small" />
-                <TextField label="Coefficient" type="number" fullWidth size="small" />
-                <TextField label="Heures par semaine" type="number" fullWidth size="small" />
-                <TextField label="Enseignant" fullWidth size="small" />
-                <TextField label="Niveau" fullWidth size="small" />
+                <TextField
+                  label="Nom de la matière"
+                  fullWidth
+                  size="small"
+                  value={formData.libelle_matiere}
+                  onChange={(e) => setFormData({ ...formData, libelle_matiere: e.target.value })}
+                />
+                <TextField
+                  label="Code"
+                  fullWidth
+                  size="small"
+                  value={formData.code_matiere}
+                  onChange={(e) => setFormData({ ...formData, code_matiere: e.target.value })}
+                />
+                <TextField
+                  label="Coefficient"
+                  type="number"
+                  fullWidth
+                  size="small"
+                  value={formData.coefficient_matiere}
+                  onChange={(e) => setFormData({ ...formData, coefficient_matiere: parseInt(e.target.value) })}
+                />
+                <TextField
+                  label="Enseignant"
+                  select
+                  fullWidth
+                  size="small"
+                  value={formData.id_enseignant}
+                  onChange={(e) => setFormData({ ...formData, id_enseignant: parseInt(e.target.value) })}
+                >
+                  <MenuItem value={0}>Sélectionner un enseignant</MenuItem>
+                  {enseignants.map((enseignant) => (
+                    <MenuItem key={enseignant.id} value={enseignant.id}>
+                      {enseignant.prenom_enseignant} {enseignant.nom_enseignant}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Box>
             </DialogContent>
             <DialogActions>
@@ -220,10 +353,7 @@ export default function Matieres() {
                 Annuler
               </Button>
               <Button
-                onClick={() => {
-                  setOpenDialog(false);
-                  setEditingMatiere(null);
-                }}
+                onClick={handleSave}
                 variant="contained"
                 sx={{ bgcolor: "#020339", "&:hover": { bgcolor: "#020339CC" }, textTransform: "none" }}
               >

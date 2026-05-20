@@ -1,22 +1,10 @@
 {
   "classes": [
     {
-      "id": 1,
       "nom_cli": "Classe A",
-      "niveau_cli": "1ère Année",
-      "id_annee": 1
-    },
-    {
-      "id": 2,
-      "nom_cli": "Classe B",
-      "niveau_cli": "2ème Année",
-      "id_annee": 1
-    },
-    {
-      "nom_cli": "classe D",
-      "niveau_cli": "5em annee",
+      "niveau_cli": "1er annee",
       "id_annee": 1,
-      "id": 2025
+      "id": 1
     }
   ],
   "etudiants": [
@@ -51,8 +39,9 @@
       "id_matiere": 1,
       "code_matiere": "MATH101",
       "libelle_matiere": "Mathématiques",
-      "coefficient_matiere": 5,
-      "id": 1
+      "coefficient_matiere": 10,
+      "id": 1,
+      "id_enseignant": 1
     }
   ],
   "salles": [

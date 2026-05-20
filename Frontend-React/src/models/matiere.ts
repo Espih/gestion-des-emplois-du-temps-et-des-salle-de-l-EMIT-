@@ -1,11 +1,11 @@
 import type { Enseignant } from "./enseignant";
 import type { Seance } from "./seance";
 export interface Matiere {
-  id_matiere: number;
+  id: number;
   code_matiere: string;
   libelle_matiere: string;
   coefficient_matiere: number;
-  id: number; 
+  id_enseignant: number; 
 }
 
 export interface MatiereWithRelations extends Matiere {
