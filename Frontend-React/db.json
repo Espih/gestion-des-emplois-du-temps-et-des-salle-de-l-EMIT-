@@ -46,9 +46,14 @@
   ],
   "salles": [
     {
-      "id_salle": 1,
+      "id": 1,
       "code_salle": "S101",
       "type_salle": "Cours"
+    },
+    {
+      "code_salle": "S002",
+      "type_salle": "Amphi",
+      "id": 2
     }
   ],
   "seances": [
