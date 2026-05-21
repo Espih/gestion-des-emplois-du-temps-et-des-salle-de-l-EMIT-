@@ -3,6 +3,7 @@ using System;
 using GestionSallesEtEDT.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GestionSallesEtEDT.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260520132051_UpdateSeanceTable")]
+    partial class UpdateSeanceTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -213,62 +216,62 @@ namespace GestionSallesEtEDT.Api.Migrations
 
             modelBuilder.Entity("GestionSallesEtEDT.Api.Models.Seance", b =>
                 {
-                    b.Property<int>("id_seance")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasColumnName("id_seance");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id_seance"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClasseId")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_classe");
 
                     b.Property<int?>("EmploiDuTempsIdEdt")
                         .HasColumnType("integer");
 
-                    b.Property<TimeSpan>("heure_debut")
-                        .HasColumnType("interval")
-                        .HasColumnName("heure_debut");
-
-                    b.Property<TimeSpan>("heure_fin")
-                        .HasColumnType("interval")
-                        .HasColumnName("heure_fin");
-
-                    b.Property<int>("id_cla")
-                        .HasColumnType("integer")
-                        .HasColumnName("id_cla");
-
-                    b.Property<int>("id_enseignant")
+                    b.Property<int>("EnseignantId")
                         .HasColumnType("integer")
                         .HasColumnName("id_enseignant");
 
-                    b.Property<int>("id_matiere")
+                    b.Property<TimeSpan>("HeureDebut")
+                        .HasColumnType("interval")
+                        .HasColumnName("heure_debut");
+
+                    b.Property<TimeSpan>("HeureFin")
+                        .HasColumnType("interval")
+                        .HasColumnName("heure_fin");
+
+                    b.Property<string>("Jour")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("jour_seance");
+
+                    b.Property<int>("MatiereId")
                         .HasColumnType("integer")
                         .HasColumnName("id_matiere");
 
-                    b.Property<int>("id_salle")
+                    b.Property<int>("SalleId")
                         .HasColumnType("integer")
                         .HasColumnName("id_salle");
 
-                    b.Property<int>("id_semestre")
+                    b.Property<int>("SemestreId")
                         .HasColumnType("integer")
                         .HasColumnName("id_semestre");
 
-                    b.Property<string>("jour")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("jour");
+                    b.HasKey("Id");
 
-                    b.HasKey("id_seance");
+                    b.HasIndex("ClasseId");
 
                     b.HasIndex("EmploiDuTempsIdEdt");
 
-                    b.HasIndex("id_cla");
+                    b.HasIndex("EnseignantId");
 
-                    b.HasIndex("id_enseignant");
+                    b.HasIndex("MatiereId");
 
-                    b.HasIndex("id_matiere");
+                    b.HasIndex("SalleId");
 
-                    b.HasIndex("id_salle");
-
-                    b.HasIndex("id_semestre");
+                    b.HasIndex("SemestreId");
 
                     b.ToTable("seances");
                 });
@@ -392,37 +395,37 @@ namespace GestionSallesEtEDT.Api.Migrations
 
             modelBuilder.Entity("GestionSallesEtEDT.Api.Models.Seance", b =>
                 {
+                    b.HasOne("GestionSallesEtEDT.Api.Models.Classe", "Classe")
+                        .WithMany()
+                        .HasForeignKey("ClasseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("GestionSallesEtEDT.Api.Models.EmploiDuTemps", null)
                         .WithMany("Seances")
                         .HasForeignKey("EmploiDuTempsIdEdt");
 
-                    b.HasOne("GestionSallesEtEDT.Api.Models.Classe", "Classe")
-                        .WithMany()
-                        .HasForeignKey("id_cla")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("GestionSallesEtEDT.Api.Models.Enseignant", "Enseignant")
                         .WithMany("Seances")
-                        .HasForeignKey("id_enseignant")
+                        .HasForeignKey("EnseignantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("GestionSallesEtEDT.Api.Models.Matiere", "Matiere")
                         .WithMany()
-                        .HasForeignKey("id_matiere")
+                        .HasForeignKey("MatiereId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("GestionSallesEtEDT.Api.Models.Salle", "Salle")
                         .WithMany()
-                        .HasForeignKey("id_salle")
+                        .HasForeignKey("SalleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("GestionSallesEtEDT.Api.Models.Semestre", "Semestre")
                         .WithMany()
-                        .HasForeignKey("id_semestre")
+                        .HasForeignKey("SemestreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

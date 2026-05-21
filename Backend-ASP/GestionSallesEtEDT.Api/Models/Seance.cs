@@ -1,30 +1,67 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace GestionSallesEtEDT.Api.Models;
+namespace GestionSallesEtEDT.Api.Models
+{
+    [Table("seances")]
+    public class Seance
+    {
+        // =========================
+        // CLE PRIMAIRE
+        // =========================
 
-[Table("seances")]
-public class Seance {
-    [Key] [Column("id_seance")] 
-    public int Id { get; set; }
-    [Required] [Column("jour_seance")] 
-    public string Jour { get; set; } = string.Empty;
-    [Required] [Column("heureDebut_seance")] 
-    public TimeSpan HeureDebut { get; set; }
-    [Required] [Column("heureFin_seance")] 
-    public TimeSpan HeureFin { get; set; }
+        [Key]
+        [Column("id_seance")]
+        public int id_seance { get; set; }
 
-    public int IdEdt { get; set; }
-    public int IdSalle { get; set; }
-    public int IdEnsei { get; set; }
-    public int IdMatiere { get; set; }
+        // =========================
+        // INFORMATIONS SEANCE
+        // =========================
 
-    [ForeignKey("IdEdt")] 
-    public virtual EmploiDuTemps EmploiDuTemps { get; set; } = null!;
-    [ForeignKey("IdSalle")] 
-    public virtual Salle Salle { get; set; } = null!;
-    [ForeignKey("IdEnsei")] 
-    public virtual Enseignant Enseignant { get; set; } = null!;
-    [ForeignKey("IdMatiere")] 
-    public virtual Matiere Matiere { get; set; } = null!;
+        [Required]
+        [Column("jour")]
+        public string jour { get; set; } = string.Empty;
+
+        [Required]
+        [Column("heure_debut")]
+        public TimeSpan heure_debut { get; set; }
+
+        [Required]
+        [Column("heure_fin")]
+        public TimeSpan heure_fin { get; set; }
+
+        // =========================
+        // CLES ETRANGERES
+        // =========================
+
+        [Column("id_salle")]
+        public int id_salle { get; set; }
+
+        [ForeignKey("id_salle")]
+        public Salle? Salle { get; set; }
+
+        [Column("id_matiere")]
+        public int id_matiere { get; set; }
+
+        [ForeignKey("id_matiere")]
+        public Matiere? Matiere { get; set; }
+
+        [Column("id_enseignant")]
+        public int id_enseignant { get; set; }
+
+        [ForeignKey("id_enseignant")]
+        public Enseignant? Enseignant { get; set; }
+
+        [Column("id_cla")]
+        public int id_cla { get; set; }
+
+        [ForeignKey("id_cla")]
+        public Classe? Classe { get; set; }
+
+        [Column("id_semestre")]
+        public int id_semestre { get; set; }
+
+        [ForeignKey("id_semestre")]
+        public Semestre? Semestre { get; set; }
+    }
 }
