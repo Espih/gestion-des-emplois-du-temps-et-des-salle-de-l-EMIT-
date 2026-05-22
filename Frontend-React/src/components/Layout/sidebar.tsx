@@ -6,6 +6,7 @@ import SchoolIcon from "@mui/icons-material/School";
 import BookIcon from "@mui/icons-material/Book";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import PersonIcon from "@mui/icons-material/Person";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
 const menuItems = [
   { path: "/dashboard", name: "Dashboard", icon: DashboardIcon },
@@ -13,6 +14,8 @@ const menuItems = [
   { path: "/enseignants", name: "Enseignants", icon: SchoolIcon },
   { path: "/matieres", name: "Matières", icon: BookIcon },
   { path: "/salles", name: "Salles", icon: MeetingRoomIcon },
+  {path: "/calendrier", name: "Calendrier", icon: CalendarMonthIcon,
+},
 ];
 
 export default function Sidebar() {
