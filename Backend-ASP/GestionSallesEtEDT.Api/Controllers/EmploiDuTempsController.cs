@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GestionSallesEtEDT.Api.Data;
 using GestionSallesEtEDT.Api.Models;
+using GestionSallesEtEDT.Api.DTOs;
 
 namespace GestionSallesEtEDT.Api.Controllers
 {
@@ -18,94 +19,111 @@ namespace GestionSallesEtEDT.Api.Controllers
 
         // GET: api/EmploiDuTemps
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EmploiDuTemps>>> GetEmploisDuTemps()
+        public async Task<ActionResult<IEnumerable<EmploiDuTempsDto>>> GetEmploisDuTemps()
         {
-            return await _context.EmploisDuTemps
+            var emplois = await _context.EmploisDuTemps
                 .Include(e => e.Classe)
                 .Include(e => e.AnneeUniversitaire)
                 .Include(e => e.Semestre)
+                .Select(e => new EmploiDuTempsDto
+                {
+                    IdEdt = e.IdEdt,
+                    Libelle = e.Libelle,
+                    DateCreation = e.DateCreation,
+                    DateModification = e.DateModification,
+                    Statut = e.Statut,
+                    IdClasse = e.IdClasse,
+                    IdAnnee = e.IdAnnee,
+                    IdSemestre = e.IdSemestre,
+                    ClasseNom = e.Classe.Nom,
+                    NiveauClasse = e.Classe.Niveau,
+                    AnneeLibelle = e.AnneeUniversitaire.Libelle,
+                    SemestreNom = e.Semestre.Nom
+                })
                 .ToListAsync();
+
+            return Ok(emplois);
         }
 
         // GET: api/EmploiDuTemps/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<EmploiDuTemps>> GetEmploiDuTemps(int id)
+        public async Task<ActionResult<EmploiDuTempsDto>> GetEmploiDuTemps(int id)
         {
-            var emploi = await _context.EmploisDuTemps
+            var e = await _context.EmploisDuTemps
                 .Include(e => e.Classe)
                 .Include(e => e.AnneeUniversitaire)
                 .Include(e => e.Semestre)
                 .FirstOrDefaultAsync(e => e.IdEdt == id);
 
-            if (emploi == null)
+            if (e == null)
                 return NotFound("Emploi du temps non trouvé");
 
-            return emploi;
+            var dto = new EmploiDuTempsDto
+            {
+                IdEdt = e.IdEdt,
+                Libelle = e.Libelle,
+                DateCreation = e.DateCreation,
+                DateModification = e.DateModification,
+                Statut = e.Statut,
+                IdClasse = e.IdClasse,
+                IdAnnee = e.IdAnnee,
+                IdSemestre = e.IdSemestre,
+                ClasseNom = e.Classe?.Nom,
+                NiveauClasse = e.Classe?.Niveau,
+                AnneeLibelle = e.AnneeUniversitaire?.Libelle,
+                SemestreNom = e.Semestre?.Nom
+            };
+
+            return Ok(dto);
         }
 
-        
         // POST: api/EmploiDuTemps
         [HttpPost]
-        public async Task<ActionResult<EmploiDuTemps>> CreateEmploiDuTemps(EmploiDuTemps emploi)
+        public async Task<ActionResult<EmploiDuTempsDto>> CreateEmploiDuTemps(EmploiDuTempsCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Validation des IDs obligatoires
-            if (emploi.IdClasse <= 0 || emploi.IdAnnee <= 0 || emploi.IdSemestre <= 0)
-                return BadRequest("Les champs IdClasse, IdAnnee et IdSemestre sont obligatoires.");
-
-            // Gestion automatique des dates
-            emploi.DateCreation = DateOnly.FromDateTime(DateTime.UtcNow);
-            emploi.DateModification = DateOnly.FromDateTime(DateTime.UtcNow);
-
-            // IMPORTANT : On détache les objets de navigation pour éviter les erreurs de validation
-            emploi.Classe = null!;
-            emploi.AnneeUniversitaire = null!;
-            emploi.Semestre = null!;
+            var emploi = new EmploiDuTemps
+            {
+                Libelle = dto.Libelle,
+                IdClasse = dto.IdClasse,
+                IdAnnee = dto.IdAnnee,
+                IdSemestre = dto.IdSemestre,
+                Statut = dto.Statut,
+                DateCreation = DateOnly.FromDateTime(DateTime.UtcNow),
+                DateModification = DateOnly.FromDateTime(DateTime.UtcNow)
+            };
 
             _context.EmploisDuTemps.Add(emploi);
             await _context.SaveChangesAsync();
 
-            // Retourner l'objet complet avec les relations chargées
-            var emploiCree = await _context.EmploisDuTemps
-                .Include(e => e.Classe)
-                .Include(e => e.AnneeUniversitaire)
-                .Include(e => e.Semestre)
-                .FirstOrDefaultAsync(e => e.IdEdt == emploi.IdEdt);
-
-            return CreatedAtAction(nameof(GetEmploiDuTemps), new { id = emploi.IdEdt }, emploiCree);
+            return await GetEmploiDuTemps(emploi.IdEdt);
         }
 
-        // PUT & DELETE restent les mêmes que précédemment
+        // PUT: api/EmploiDuTemps/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateEmploiDuTemps(int id, EmploiDuTemps emploi)
+        public async Task<IActionResult> UpdateEmploiDuTemps(int id, EmploiDuTempsUpdateDto dto)
         {
-            if (id != emploi.IdEdt)
-                return BadRequest("ID incorrect");
+            var emploi = await _context.EmploisDuTemps.FindAsync(id);
+            if (emploi == null)
+                return NotFound("Emploi du temps non trouvé");
 
-            _context.Entry(emploi).State = EntityState.Modified;
+            emploi.Libelle = dto.Libelle;
+            emploi.Statut = dto.Statut;
+            emploi.DateModification = DateOnly.FromDateTime(DateTime.UtcNow);
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.EmploisDuTemps.Any(e => e.IdEdt == id))
-                    return NotFound("Emploi du temps non trouvé");
-                throw;
-            }
-
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
+        // DELETE: api/EmploiDuTemps/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmploiDuTemps(int id)
         {
             var emploi = await _context.EmploisDuTemps.FindAsync(id);
             if (emploi == null)
-                return NotFound("Emploi du temps non trouvé");
+                return NotFound();
 
             _context.EmploisDuTemps.Remove(emploi);
             await _context.SaveChangesAsync();
