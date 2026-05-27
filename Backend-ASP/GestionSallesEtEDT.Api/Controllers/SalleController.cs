@@ -45,14 +45,14 @@ namespace GestionSallesEtEDT.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetSalle), new { id = salle.id_salle }, salle);
+            return CreatedAtAction(nameof(GetSalle), new { id = salle.Id }, salle);
         }
 
         // PUT: api/salle/1
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateSalle(int id, Salle salle)
         {
-            if (id != salle.id_salle)
+            if (id != salle.Id)
             {
                 return BadRequest();
             }
