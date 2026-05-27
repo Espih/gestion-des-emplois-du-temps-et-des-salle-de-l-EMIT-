@@ -6,6 +6,7 @@ import Classes from "../pages/Classes";
 import Enseignants from "../pages/Enseignants";
 import Matieres from "../pages/Matieres";
 import Salles from "../pages/Salles";
+import Calendrier from "../pages/Calendrier";
 
 export default function AppRoutes() {
   return (
@@ -19,6 +20,7 @@ export default function AppRoutes() {
           <Route path="/enseignants" element={<Enseignants />} />
           <Route path="/matieres" element={<Matieres />} />
           <Route path="/salles" element={<Salles />} />
+          <Route path="/calendrier" element={<Calendrier />} />
         </Route>
       </Routes>
     </BrowserRouter>

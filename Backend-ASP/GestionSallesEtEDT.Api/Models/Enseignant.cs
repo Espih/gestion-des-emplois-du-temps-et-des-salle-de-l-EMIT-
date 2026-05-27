@@ -32,3 +32,4 @@ public class Enseignant
 
     public virtual Utilisateur? Utilisateur { get; set; }
 }
+
