@@ -1,19 +1,20 @@
-import type { Classe } from "./classe";
-import type { Matiere } from "./matiere";
-import type { Salle } from "./salle";
-
 export interface Seance {
-  id_seance: number;
-  id_jour_seance: "Lundi" | "Mardi" | "Mercredi" | "Jeudi" | "Vendredi" | "Samedi";
-  heureDebut_seance: string;
-  heureFin_seance: string;
-  id_matiere: number;
-  id_salle: number; 
-  id_cli: number; 
-}
+  id_seance?: number;
 
-export interface SeanceWithRelations extends Seance {
-  matiere?: Matiere;
-  salle?: Salle;
-  classe?: Classe;
+  jour:
+    | "Lundi"
+    | "Mardi"
+    | "Mercredi"
+    | "Jeudi"
+    | "Vendredi"
+    | "Samedi";
+
+  heure_debut: string;
+  heure_fin: string;
+
+  id_cla: number;
+  id_matiere: number;
+  id_salle: number;
+  id_enseignant: number;
+  id_semestre?: number;
 }

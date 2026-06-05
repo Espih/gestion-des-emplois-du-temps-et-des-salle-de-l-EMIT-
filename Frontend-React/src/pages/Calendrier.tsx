@@ -1,21 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 import {
   Box,
   Typography,
+  Button,
+  Paper,
   Table,
-  TableBody,
-  TableCell,
-  TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Chip,
-  Button,
+  TableCell,
+  TableBody,
+  TableContainer,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
+  MenuItem,
   IconButton,
   Alert,
 } from "@mui/material";
@@ -24,224 +25,324 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-interface Emploi {
-  heure: string;
-  lundi: string;
-  mardi: string;
-  mercredi: string;
-  jeudi: string;
-  vendredi: string;
-}
+import { seanceService } from "../services/seanceService";
+import type { Seance } from "../models/seance";
 
 export default function Calendrier() {
-  const [emplois, setEmplois] = useState<Emploi[]>([
-    {
-      heure: "08:00 - 10:00",
-      lundi: "Math",
-      mardi: "Physique",
-      mercredi: "Info",
-      jeudi: "Anglais",
-      vendredi: "BD",
-    },
-  ]);
-
+  const [seances, setSeances] = useState<Seance[]>([]);
   const [open, setOpen] = useState(false);
-  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [editId, setEditId] = useState<number | null>(null);
   const [error, setError] = useState("");
 
-  const [newCours, setNewCours] = useState<Emploi>({
-    heure: "",
-    lundi: "",
-    mardi: "",
-    mercredi: "",
-    jeudi: "",
-    vendredi: "",
+  const [form, setForm] = useState<Seance>({
+    jour: "Lundi",
+    heure_debut: "",
+    heure_fin: "",
+    id_cla: 0,
+    id_matiere: 0,
+    id_salle: 0,
+    id_enseignant: 0,
+    id_semestre: 1,
   });
 
-  // ✅ SAVE (ADD + EDIT)
-  const handleSaveCours = () => {
-    if (
-      !newCours.heure ||
-      !newCours.lundi ||
-      !newCours.mardi ||
-      !newCours.mercredi ||
-      !newCours.jeudi ||
-      !newCours.vendredi
-    ) {
-      setError("Fenoy daholo ny champs rehetra");
-      return;
+  useEffect(() => {
+    loadSeances();
+  }, []);
+
+  const loadSeances = async () => {
+    try {
+      const data = await seanceService.getAll();
+      setSeances(data);
+    } catch (error) {
+      console.error(error);
     }
+  };
 
-    setError("");
-
-    if (editIndex !== null) {
-      const updated = [...emplois];
-      updated[editIndex] = newCours;
-      setEmplois(updated);
-      setEditIndex(null);
-    } else {
-      setEmplois([...emplois, newCours]);
-    }
-
-    setNewCours({
-      heure: "",
-      lundi: "",
-      mardi: "",
-      mercredi: "",
-      jeudi: "",
-      vendredi: "",
+  const resetForm = () => {
+    setForm({
+      jour: "Lundi",
+      heure_debut: "",
+      heure_fin: "",
+      id_cla: 0,
+      id_matiere: 0,
+      id_salle: 0,
+      id_enseignant: 0,
+      id_semestre: 1,
     });
-
-    setOpen(false);
-  };
-
-  const handleEdit = (index: number) => {
-    setNewCours(emplois[index]);
-    setEditIndex(index);
-    setError("");
-    setOpen(true);
-  };
-
-  const handleDelete = (index: number) => {
-    setEmplois(emplois.filter((_, i) => i !== index));
   };
 
   const handleOpen = () => {
-    setEditIndex(null);
+    resetForm();
+    setEditId(null);
     setError("");
-    setNewCours({
-      heure: "",
-      lundi: "",
-      mardi: "",
-      mercredi: "",
-      jeudi: "",
-      vendredi: "",
-    });
     setOpen(true);
   };
 
+  const handleEdit = (seance: Seance) => {
+    setForm(seance);
+    setEditId(seance.id_seance ?? null);
+    setOpen(true);
+  };
+
+  const handleDelete = async (id?: number) => {
+    if (!id) return;
+
+    const confirmDelete = window.confirm(
+      "Voulez-vous supprimer cette séance ?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await seanceService.delete(id);
+      loadSeances();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleSave = async () => {
+    if (
+      !form.heure_debut ||
+      !form.heure_fin ||
+      form.id_cla === 0 ||
+      form.id_matiere === 0 ||
+      form.id_salle === 0 ||
+      form.id_enseignant === 0
+    ) {
+      setError("Veuillez remplir tous les champs");
+      return;
+    }
+
+    try {
+      if (editId) {
+        await seanceService.update(editId, form);
+      } else {
+        await seanceService.create(form);
+      }
+
+      setOpen(false);
+      loadSeances();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
-    <Box p={2}>
+    <Box p={3}>
       <Typography variant="h4" fontWeight="bold">
-        Emploi du Temps
+        Calendrier Universitaire
       </Typography>
 
-      <Button onClick={handleOpen} startIcon={<AddIcon />} sx={{ mt: 2 }}>
-        Ajouter
+      <Button
+        variant="contained"
+        startIcon={<AddIcon />}
+        sx={{ mt: 2, mb: 2 }}
+        onClick={handleOpen}
+      >
+        Ajouter une séance
       </Button>
 
-      <TableContainer component={Paper} sx={{ mt: 2 }}>
+      <TableContainer component={Paper}>
         <Table>
+
           <TableHead>
             <TableRow>
-              <TableCell>Heure</TableCell>
-              <TableCell>Lundi</TableCell>
-              <TableCell>Mardi</TableCell>
-              <TableCell>Mercredi</TableCell>
-              <TableCell>Jeudi</TableCell>
-              <TableCell>Vendredi</TableCell>
+              <TableCell>Jour</TableCell>
+              <TableCell>Début</TableCell>
+              <TableCell>Fin</TableCell>
+              <TableCell>Classe</TableCell>
+              <TableCell>Matière</TableCell>
+              <TableCell>Salle</TableCell>
+              <TableCell>Enseignant</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
-            {emplois.map((e, i) => (
-              <TableRow key={i}>
-                <TableCell>{e.heure}</TableCell>
-                <TableCell><Chip label={e.lundi} /></TableCell>
-                <TableCell><Chip label={e.mardi} /></TableCell>
-                <TableCell><Chip label={e.mercredi} /></TableCell>
-                <TableCell><Chip label={e.jeudi} /></TableCell>
-                <TableCell><Chip label={e.vendredi} /></TableCell>
+            {seances.map((item) => (
+              <TableRow key={item.id_seance}>
+                <TableCell>{item.jour}</TableCell>
+                <TableCell>{item.heure_debut}</TableCell>
+                <TableCell>{item.heure_fin}</TableCell>
+                <TableCell>{item.id_cla}</TableCell>
+                <TableCell>{item.id_matiere}</TableCell>
+                <TableCell>{item.id_salle}</TableCell>
+                <TableCell>{item.id_enseignant}</TableCell>
 
                 <TableCell>
-                  <IconButton onClick={() => handleEdit(i)}>
+                  <IconButton
+                    color="primary"
+                    onClick={() => handleEdit(item)}
+                  >
                     <EditIcon />
                   </IconButton>
 
-                  <IconButton onClick={() => handleDelete(i)}>
+                  <IconButton
+                    color="error"
+                    onClick={() =>
+                      handleDelete(item.id_seance)
+                    }
+                  >
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>
+
               </TableRow>
             ))}
           </TableBody>
+
         </Table>
       </TableContainer>
 
-      {/* DIALOG */}
-      <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        fullWidth
+      >
         <DialogTitle>
-          {editIndex !== null ? "Modifier cours" : "Ajouter cours"}
+          {editId
+            ? "Modifier Séance"
+            : "Ajouter Séance"}
         </DialogTitle>
 
         <DialogContent>
-          {error && <Alert severity="error">{error}</Alert>}
+
+          {error && (
+            <Alert severity="error">
+              {error}
+            </Alert>
+          )}
 
           <TextField
-            label="Heure"
+            select
             fullWidth
             margin="dense"
-            value={newCours.heure}
+            label="Jour"
+            value={form.jour}
             onChange={(e) =>
-              setNewCours({ ...newCours, heure: e.target.value })
+              setForm({
+                ...form,
+                jour: e.target.value as Seance["jour"],
+              })
+            }
+          >
+            {[
+              "Lundi",
+              "Mardi",
+              "Mercredi",
+              "Jeudi",
+              "Vendredi",
+              "Samedi",
+            ].map((jour) => (
+              <MenuItem
+                key={jour}
+                value={jour}
+              >
+                {jour}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            fullWidth
+            type="time"
+            margin="dense"
+            label="Heure début"
+            InputLabelProps={{ shrink: true }}
+            value={form.heure_debut}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                heure_debut: e.target.value,
+              })
             }
           />
 
           <TextField
-            label="Lundi"
             fullWidth
+            type="time"
             margin="dense"
-            value={newCours.lundi}
+            label="Heure fin"
+            InputLabelProps={{ shrink: true }}
+            value={form.heure_fin}
             onChange={(e) =>
-              setNewCours({ ...newCours, lundi: e.target.value })
+              setForm({
+                ...form,
+                heure_fin: e.target.value,
+              })
             }
           />
 
           <TextField
-            label="Mardi"
             fullWidth
             margin="dense"
-            value={newCours.mardi}
+            label="ID Classe"
+            type="number"
+            value={form.id_cla}
             onChange={(e) =>
-              setNewCours({ ...newCours, mardi: e.target.value })
+              setForm({
+                ...form,
+                id_cla: Number(e.target.value),
+              })
             }
           />
 
           <TextField
-            label="Mercredi"
             fullWidth
             margin="dense"
-            value={newCours.mercredi}
+            label="ID Matière"
+            type="number"
+            value={form.id_matiere}
             onChange={(e) =>
-              setNewCours({ ...newCours, mercredi: e.target.value })
+              setForm({
+                ...form,
+                id_matiere: Number(e.target.value),
+              })
             }
           />
 
           <TextField
-            label="Jeudi"
             fullWidth
             margin="dense"
-            value={newCours.jeudi}
+            label="ID Salle"
+            type="number"
+            value={form.id_salle}
             onChange={(e) =>
-              setNewCours({ ...newCours, jeudi: e.target.value })
+              setForm({
+                ...form,
+                id_salle: Number(e.target.value),
+              })
             }
           />
 
           <TextField
-            label="Vendredi"
             fullWidth
             margin="dense"
-            value={newCours.vendredi}
+            label="ID Enseignant"
+            type="number"
+            value={form.id_enseignant}
             onChange={(e) =>
-              setNewCours({ ...newCours, vendredi: e.target.value })
+              setForm({
+                ...form,
+                id_enseignant: Number(
+                  e.target.value
+                ),
+              })
             }
           />
+
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Annuler</Button>
-          <Button variant="contained" onClick={handleSaveCours}>
+          <Button onClick={() => setOpen(false)}>
+            Annuler
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={handleSave}
+          >
             Enregistrer
           </Button>
         </DialogActions>
