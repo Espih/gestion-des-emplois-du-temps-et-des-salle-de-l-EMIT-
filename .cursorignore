@@ -1,0 +1,13 @@
+# Ignorer les dépendances et builds Frontend
+frontend-react/node_modules/
+frontend-react/dist/
+frontend-react/.vite/
+
+# Ignorer les builds Backend
+**/bin/
+**/obj/
+**/.vs/
+
+# Ignorer les fichiers système et logs
+.DS_Store
+*.log
