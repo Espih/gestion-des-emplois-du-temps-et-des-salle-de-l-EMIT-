@@ -24,7 +24,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEdtPdfService, EdtPdfService>();
 
 // Sécurisation JWT
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "CleDefinitionDeSecuriteSuperSecreteDe32CaracteresMin!";
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "JWT Key n'est pas encore configuré.";
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -54,3 +54,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+/*using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider
+        .GetRequiredService<ApplicationDbContext>();
+
+    await DbInitializer.SeedAsync(context);
+}*/
