@@ -427,9 +427,13 @@ export default function Login({
                 Plateforme centralisée pour la gestion pédagogique et
                 l'organisation universitaire.
               </p>
+              <p className="text-[11px]" style={{ color: "#6293ca" }}>
+                Contact Developpeur : esperencio.ranaivoson@gmail.com
+              </p>
             </div>
 
-            <div className="mt-auto pt-8">
+            <div className="mt-auto pt-8" >
+              
               <p className="text-[11px]" style={{ color: "#3b6aa0" }}>
                 © 2026 EMIT — Tous droits réservés
               </p>
