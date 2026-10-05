@@ -247,7 +247,7 @@ namespace GestionSallesEtEDT.Api.Controllers
         }
 
         // ─── REGISTER TEST USER ─────────────────────────────
-        [HttpPost("register-test-user")]
+        /*[HttpPost("register-test-user")]
         public async Task<IActionResult> RegisterTestUser()
         {
             var userExists = await _context.Utilisateurs
@@ -263,7 +263,7 @@ namespace GestionSallesEtEDT.Api.Controllers
             await _context.SaveChangesAsync();
 
             return Ok("Utilisateur créé ! → german2004rak@gmail.com / Azerty12345!");
-        }
+        }*/
 
         // ─── REFRESH TOKEN ─────────────────────────────
         [HttpPost("refresh")]
