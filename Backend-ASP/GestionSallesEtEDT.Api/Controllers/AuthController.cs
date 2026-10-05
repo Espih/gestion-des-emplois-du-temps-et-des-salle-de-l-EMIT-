@@ -345,8 +345,10 @@ namespace GestionSallesEtEDT.Api.Controllers
         private string GenerateAccessToken(Utilisateur user)
         {
             var keyStr = _config["Jwt:Key"];
-            if (string.IsNullOrEmpty(keyStr) || keyStr.Length < 32)
-                keyStr = "CleDefinitionDeSecuriteSuperSecreteDe32CaracteresMin!";
+
+                if (string.IsNullOrWhiteSpace(keyStr) || keyStr.Length < 32)
+                    throw new InvalidOperationException(
+                        "Jwt:Key doit être configurée et contenir au moins 32 caractères.");
 
             var minutes = int.Parse(_config["Jwt:AccessTokenExpirationMinutes"] ?? "15");
             var tokenHandler = new JwtSecurityTokenHandler();

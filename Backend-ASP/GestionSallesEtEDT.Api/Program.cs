@@ -24,7 +24,9 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEdtPdfService, EdtPdfService>();
 
 // Sécurisation JWT
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "JWT Key n'est pas encore configuré.";
+var jwtKey = builder.Configuration["Jwt:Key"]
+    ?? throw new InvalidOperationException(
+        "Jwt:Key n'est pas configurée.");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
