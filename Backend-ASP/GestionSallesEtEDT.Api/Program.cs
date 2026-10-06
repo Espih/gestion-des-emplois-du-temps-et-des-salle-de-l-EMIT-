@@ -54,6 +54,11 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowReact");
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapGet("/", () => Results.Ok(new
+    {
+        status = "online",
+        message = "GestionSallesEtEDT.Api fonctionne correctement."
+    }));
 app.MapControllers();
 app.Run();
 /*using (var scope = app.Services.CreateScope())
