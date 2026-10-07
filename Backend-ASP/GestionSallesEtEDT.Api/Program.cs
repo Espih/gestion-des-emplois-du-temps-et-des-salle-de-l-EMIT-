@@ -27,6 +27,12 @@ builder.Services.AddScoped<IEdtPdfService, EdtPdfService>();
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException(
         "Jwt:Key n'est pas configurée.");
+
+if (jwtKey.Length < 32)
+{
+    throw new InvalidOperationException(
+        "Jwt:Key doit contenir au moins 32 caractères.");
+}
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
